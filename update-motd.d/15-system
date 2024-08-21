@@ -68,13 +68,29 @@ label6="$(color $statsLabelColor "Procs") $(color $bulletColor "..")$(color $sta
 label7="$(free -h --si | awk 'NR==2 { printf "%sB / %sB \\e[38;5;144m* Free: %sB\\e[0m",$3,$2,$4; }')"
 label7="$(color $statsLabelColor "Memory") $(color $bulletColor "..")$(color $statsLabelColor ".") $(color $infoColor "$label7")"
 
-label8="$(hostname -I)"
-label8="$(color $statsLabelColor "IP") $(color $bulletColor ".....")$(color $statsLabelColor ".") $(color $infoColor $label8)"
+# Get all IPs
+ips=$(hostname -I)
+formatted_ips=""
+count=0
+max_per_line=3  # Adjust this number based on how many IPs you want per line
 
+for ip in $ips; do
+    formatted_ips+="$(color $infoColor $ip) "
+    count=$((count+1))
+    if [ $count -eq $max_per_line ]; then
+        formatted_ips+="\n                                                                   " # Add a newline and minimal indentation for IPs
+        count=0
+    fi
+done
+
+# Remove any trailing whitespace or newlines at the end of formatted_ips
+formatted_ips=$(echo -e "$formatted_ips" | sed -e 's/[[:space:]]*$//')
+
+label8="$(color $statsLabelColor "IP") $(color $bulletColor ".....")$(color $statsLabelColor ".") $formatted_ips"
 # Print
 echo
 # Two Entries Per Line
 echo -e "                                                         $label2\r   $label1"
 echo -e "                                                         $label4\r   $label3"
 echo -e "                                                         $label6\r   $label5"
-echo -e "                                                         $label8\r   $label7"
+echo -e "   $label7                $label8"
